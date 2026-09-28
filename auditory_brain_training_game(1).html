@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Latihan Otak & Pendengaran (AudioBrain Gym Pro)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .pulse-glow-blue { box-shadow: 0 0 25px rgba(59, 130, 246, 0.5); }
+    .pulse-glow-emerald { box-shadow: 0 0 25px rgba(16, 185, 129, 0.5); }
+    .pulse-glow-purple { box-shadow: 0 0 25px rgba(168, 85, 247, 0.5); }
+    .pulse-glow-rose { box-shadow: 0 0 25px rgba(244, 63, 94, 0.5); }
+    @keyframes audioWave {
+      0%, 100% { height: 8px; }
+      50% { height: 32px; }
+    }
+    .animate-wave {
+      animation: audioWave 1s ease-in-out infinite;
+    }
+    .stroop-flash {
+      animation: flashPulse 0.3s ease-out;
+    }
+    @keyframes flashPulse {
+      0% { opacity: 0.3; transform: scale(0.98); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+  <header class="border-b border-slate-800 bg-slate-950/60 sticky top-0 z-50 backdrop-blur-md">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+          <i class="fa-solid font-bold fa-brain text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-rose-400 bg-clip-text text-transparent">AudioBrain Gym Pro</h1>
+          <p class="text-xs text-slate-400">Asah Refleks, Refleksi Kognitif & Ketajaman Auditori</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 bg-slate-900 p-1.5 rounded-xl border border-slate-800">
+        <button id="audioToggleBtn" onclick="toggleMute()" class="p-2 px-3 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-800 transition flex items-center gap-2">
+          <i id="audioIcon" class="fa-solid fa-volume-high text-indigo-400"></i>
+          <span id="audioText">Audio Aktif</span>
+        </button>
+        <button onclick="resetHighScores()" class="p-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition" title="Reset Skor">
+          <i class="fa-solid fa-rotate-right"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full flex flex-col justify-center">
+
+    <!-- Mode Selector Tabs (Now 4 Modes) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+      <!-- Mode 1: Pitch -->
+      <button onclick="switchMode('pitch')" id="tab-pitch" class="mode-tab p-4 rounded-2xl border border-slate-800 bg-slate-800/40 hover:bg-slate-800/80 transition text-left relative overflow-hidden group">
+        <div class="flex items-center justify-between mb-2">
+          <span class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center text-sm font-bold"><i class="fa-solid fa-music"></i></span>
+          <span id="badge-pitch" class="text-xs px-2 py-0.5 rounded-full bg-slate-700 text-slate-300">Skor: <span id="hs-pitch">0</span></span>
+        </div>
+        <h3 class="font-bold text-slate-200 group-hover:text-blue-400 transition">1. Pembeda Nada</h3>
+        <p class="text-xs text-slate-400 mt-1">Latih persepsi Frekuensi Tinggi vs Rendah.</p>
+      </button>
+
+      <!-- Mode 2: Stereo -->
+      <button onclick="switchMode('stereo')" id="tab-stereo" class="mode-tab p-4 rounded-2xl border border-slate-800 bg-slate-800/40 hover:bg-slate-800/80 transition text-left relative overflow-hidden group">
+        <div class="flex items-center justify-between mb-2">
+          <span class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-sm font-bold"><i class="fa-solid fa-headphones"></i></span>
+          <span id="badge-stereo" class="text-xs px-2 py-0.5 rounded-full bg-slate-700 text-slate-300">Skor: <span id="hs-stereo">0</span></span>
+        </div>
+        <h3 class="font-bold text-slate-200 group-hover:text-emerald-400 transition">2. Audio Stereo</h3>
+        <p class="text-xs text-slate-400 mt-1">Refleks arah telinga Kiri vs Kanan.</p>
+      </button>
+
+      <!-- Mode 3: Rhythm -->
+      <button onclick="switchMode('rhythm')" id="tab-rhythm" class="mode-tab p-4 rounded-2xl border border-slate-800 bg-slate-800/40 hover:bg-slate-800/80 transition text-left relative overflow-hidden group">
+        <div class="flex items-center justify-between mb-2">
+          <span class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center text-sm font-bold"><i class="fa-solid fa-drum"></i></span>
+          <span id="badge-rhythm" class="text-xs px-2 py-0.5 rounded-full bg-slate-700 text-slate-300">Level: <span id="hs-rhythm">0</span></span>
+        </div>
+        <h3 class="font-bold text-slate-200 group-hover:text-purple-400 transition">3. Memori Sekuens</h3>
+        <p class="text-xs text-slate-400 mt-1">Ingat dan ulangi pola nada beruntun.</p>
+      </button>
+
+      <!-- Mode 4: Auditory Stroop -->
+      <button onclick="switchMode('stroop')" id="tab-stroop" class="mode-tab p-4 rounded-2xl border border-slate-800 bg-slate-800/40 hover:bg-slate-800/80 transition text-left relative overflow-hidden group">
+        <div class="flex items-center justify-between mb-2">
+          <span class="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center text-sm font-bold"><i class="fa-solid fa-bolt"></i></span>
+          <span id="badge-stroop" class="text-xs px-2 py-0.5 rounded-full bg-slate-700 text-slate-300">Skor: <span id="hs-stroop">0</span></span>
+        </div>
+        <h3 class="font-bold text-slate-200 group-hover:text-rose-400 transition">4. Auditory Stroop</h3>
+        <p class="text-xs text-slate-400 mt-1">Konflik pemrosesan Kata vs Pitch Nada.</p>
+      </button>
+    </div>
+
+    <div id="gameCard" class="bg-slate-950/80 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden min-h-[440px] flex flex-col justify-between">
+      
+      <!-- Visualizer animation -->
+      <div id="visualizer" class="absolute top-6 right-6 flex items-end gap-1 h-8 opacity-40">
+        <div class="w-1 bg-indigo-500 rounded-full h-2"></div>
+        <div class="w-1 bg-indigo-500 rounded-full h-2"></div>
+        <div class="w-1 bg-indigo-500 rounded-full h-2"></div>
+        <div class="w-1 bg-indigo-500 rounded-full h-2"></div>
+      </div>
+
+      <!-- Top Dashboard Info -->
+      <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+        <div>
+          <h2 id="modeTitle" class="text-2xl font-bold text-slate-100 flex items-center gap-2">
+            Auditory Stroop Test
+          </h2>
+          <p id="modeDesc" class="text-xs text-slate-400 mt-0.5">Abaikan konflik stimulus dan fokus pada instruksi yang diminta!</p>
+        </div>
+
+        <div class="flex items-center gap-6">
+          <div class="text-right">
+            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">Reaction Time</span>
+            <span id="reactionTime" class="text-xl font-extrabold text-cyan-400">0 ms</span>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">Skor</span>
+            <span id="currentScore" class="text-2xl font-extrabold text-indigo-400">0</span>
+          </div>
+          <div id="timerContainer" class="text-right">
+            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">Waktu</span>
+            <span id="timer" class="text-2xl font-extrabold text-amber-400">30s</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Game Area -->
+      <div class="my-6 flex flex-col items-center justify-center text-center relative min-h-[170px]">
+        
+        <!-- Target Instruction Banner for Stroop Mode -->
+        <div id="stroopInstructionBanner" class="hidden mb-4 px-5 py-2.5 rounded-full bg-slate-900 border border-slate-700 text-sm font-bold text-amber-300 shadow-md flex items-center gap-2">
+          <i class="fa-solid fa-bullseye text-amber-400"></i>
+          <span id="stroopTargetRuleText">FOKUS ATURAN: KATA UCAPAN</span>
+        </div>
+
+        <!-- Status Message -->
+        <div id="statusMessage" class="text-lg md:text-xl font-semibold text-slate-300 mb-4 h-8 transition-all flex items-center justify-center gap-2">
+          <span>Klik tombol "Mulai Game" untuk memulai</span>
+        </div>
+
+        <!-- Replay Trigger Button -->
+        <button id="replayBtn" onclick="playCurrentStimulus()" class="hidden mb-4 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 border border-slate-700 transition flex items-center gap-2">
+          <i class="fa-solid fa-rotate-right text-indigo-400"></i> Putar Ulang Suara
+        </button>
+
+        <!-- Dynamic Game Controls Container -->
+        <div id="controlsContainer" class="w-full max-w-md mx-auto">
+          <!-- Dynamically inserted controls -->
+        </div>
+      </div>
+
+      <!-- Bottom Action & Information Footer Bar -->
+      <div class="flex items-center justify-between border-t border-slate-800/80 pt-4 mt-auto">
+        <div class="text-xs text-slate-500 flex items-center gap-2">
+          <i class="fa-solid fa-circle-info text-indigo-500"></i>
+          <span id="instructionHint">Kombinasi Web Speech API & Web Audio API melatih fleksibilitas kognitif.</span>
+        </div>
+
+        <button id="startBtn" onclick="startGame()" class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-sm transition shadow-lg shadow-indigo-600/30 flex items-center gap-2">
+          <i class="fa-solid fa-play"></i> Mulai Game
+        </button>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="border-t border-slate-800/80 bg-slate-950/40 py-4 text-center text-xs text-slate-500">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+      <p>&copy; 2026 AudioBrain Gym Pro. Menggunakan Web Audio & Speech Synthesis API.</p>
+      <p>Latihan Stroop Auditori melatih penahanan impuls (inhibition control) di korteks prefrontal.</p>
+    </div>
+  </footer>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 translate-y-20 opacity-0 transition-all duration-300 bg-slate-800 text-slate-100 border border-slate-700 px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 z-50">
+    <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+    <span id="toastText" class="text-sm font-medium">Informasi disimpan</span>
+  </div>
+
+  <script>
+    // Audio Context & Speech Synthesis
+    let audioCtx = null;
+    let synth = window.speechSynthesis;
+    let isMuted = false;
+
+    // Game Core State
+    let currentMode = 'pitch'; // 'pitch', 'stereo', 'rhythm', 'stroop'
+    let isPlaying = false;
+    let score = 0;
+    let timer = 30;
+    let timerInterval = null;
+
+    // Reaction Time Metrics
+    let stimulusStartTime = 0;
+    let lastReactionTime = 0;
+
+    // High Scores State
+    let highScores = {
+      pitch: parseInt(localStorage.getItem('ab_hs_pitch') || '0'),
+      stereo: parseInt(localStorage.getItem('ab_hs_stereo') || '0'),
+      rhythm: parseInt(localStorage.getItem('ab_hs_rhythm') || '0'),
+      stroop: parseInt(localStorage.getItem('ab_hs_stroop') || '0')
+    };
+
+    // Game Target States
+    let currentTarget = null; 
+    let stroopRule = 'word'; // 'word' (fokus kata) OR 'pitch' (fokus nada)
+    let stroopWord = 'TINGGI'; // 'TINGGI' or 'RENDAH'
+    let stroopPitch = 'high'; // 'high' or 'low'
+
+    // Rhythm Pads Array
+    let rhythmSequence = [];
+    let playerSequence = [];
+    let isPatternPlaying = false;
+    const rhythmPitches = [
+      { id: 0, note: "Nada 1", freq: 261.63, color: "bg-blue-600 hover:bg-blue-500 border-blue-400" },
+      { id: 1, note: "Nada 2", freq: 329.63, color: "bg-emerald-600 hover:bg-emerald-500 border-emerald-400" },
+      { id: 2, note: "Nada 3", freq: 392.00, color: "bg-amber-600 hover:bg-amber-500 border-amber-400" },
+      { id: 3, note: "Nada 4", freq: 523.25, color: "bg-purple-600 hover:bg-purple-500 border-purple-400" }
+    ];
+
+    // Initialize Web Audio Context
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function toggleMute() {
+      isMuted = !isMuted;
+      const icon = document.getElementById('audioIcon');
+      const text = document.getElementById('audioText');
+      if (isMuted) {
+        icon.className = 'fa-solid fa-volume-xmark text-rose-400';
+        text.innerText = 'Audio Bisu';
+        if (synth) synth.cancel();
+        showToast('Audio dimatikan', 'info');
+      } else {
+        icon.className = 'fa-solid fa-volume-high text-indigo-400';
+        text.innerText = 'Audio Aktif';
+        showToast('Audio diaktifkan', 'success');
+      }
+    }
+
+    function triggerVisualizer() {
+      const bars = document.querySelectorAll('#visualizer div');
+      bars.forEach(bar => bar.classList.add('animate-wave'));
+      setTimeout(() => {
+        bars.forEach(bar => bar.classList.remove('animate-wave'));
+      }, 600);
+    }
+
+    // Synthesize Sound Tone
+    function playTone(freq, type = 'sine', duration = 0.4, pan = 0) {
+      if (isMuted) return;
+      try {
+        const ctx = getAudioContext();
+        triggerVisualizer();
+
+        const osc = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        const panner = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+        gainNode.gain.setValueAtTime(0.001, ctx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+
+        if (panner) {
+          panner.pan.setValueAtTime(pan, ctx.currentTime);
+          osc.connect(gainNode);
+          gainNode.connect(panner);
+          panner.connect(ctx.destination);
+        } else {
+          osc.connect(gainNode);
+          gainNode.connect(ctx.destination);
+        }
+
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch (e) {
+        console.error("Audio Synthesis Error:", e);
+      }
+    }
+
+    // Speech Synthesis for Auditory Stroop Mode
+    function speakWord(text) {
+      if (isMuted || !synth) return;
+      synth.cancel(); // cancel previous queue
+      const utterance = new SpeechSynthesisUtterance(text.toLowerCase());
+      utterance.lang = 'id-ID';
+      utterance.rate = 1.1; // slightly fast for sharp response
+      utterance.pitch = 1.0;
+      synth.speak(utterance);
+    }
+
+    function playFeedbackSound(isCorrect) {
+      if (isMuted) return;
+      if (isCorrect) {
+        playTone(587.33, 'triangle', 0.12, 0); 
+        setTimeout(() => playTone(880, 'triangle', 0.2, 0), 80); 
+      } else {
+        playTone(180, 'sawtooth', 0.3, 0);
+      }
+    }
+
+    function updateHighScoreDisplay() {
+      document.getElementById('hs-pitch').innerText = highScores.pitch;
+      document.getElementById('hs-stereo').innerText = highScores.stereo;
+      document.getElementById('hs-rhythm').innerText = highScores.rhythm;
+      document.getElementById('hs-stroop').innerText = highScores.stroop;
+    }
+
+    function resetHighScores() {
+      if (confirm('Apakah Anda yakin ingin mereset semua rekor skor?')) {
+        highScores = { pitch: 0, stereo: 0, rhythm: 0, stroop: 0 };
+        localStorage.removeItem('ab_hs_pitch');
+        localStorage.removeItem('ab_hs_stereo');
+        localStorage.removeItem('ab_hs_rhythm');
+        localStorage.removeItem('ab_hs_stroop');
+        updateHighScoreDisplay();
+        showToast('Rekor skor berhasil direset', 'info');
+      }
+    }
+
+    function switchMode(mode) {
+      if (isPlaying) endGame();
+
+      currentMode = mode;
+      
+      // Update Tab Styles
+      document.querySelectorAll('.mode-tab').forEach(tab => {
+        tab.classList.remove('border-indigo-500', 'bg-indigo-950/40');
+        tab.classList.add('border-slate-800', 'bg-slate-800/40');
+      });
+
+      const activeTab = document.getElementById(`tab-${mode}`);
+      activeTab.classList.remove('border-slate-800', 'bg-slate-800/40');
+      activeTab.classList.add('border-indigo-500', 'bg-indigo-950/40');
+
+      // Elements
+      const titleEl = document.getElementById('modeTitle');
+      const descEl = document.getElementById('modeDesc');
+      const timerContainer = document.getElementById('timerContainer');
+      const instructionHint = document.getElementById('instructionHint');
+      const controls = document.getElementById('controlsContainer');
+      const replayBtn = document.getElementById('replayBtn');
+      const stroopBanner = document.getElementById('stroopInstructionBanner');
+
+      replayBtn.classList.add('hidden');
+      stroopBanner.classList.add('hidden');
+
+      if (mode === 'pitch') {
+        titleEl.innerHTML = `<i class="fa-solid fa-music text-blue-400"></i> Pembeda Nada`;
+        descEl.innerText = "Dengarkan nada dan tentukan apakah frekuensinya Tinggi atau Rendah!";
+        instructionHint.innerText = "Latih persepsi kepekaan frekuensi bunyi auditori.";
+        timerContainer.classList.remove('opacity-0');
+        
+        controls.innerHTML = `
+          <div class="grid grid-cols-2 gap-4">
+            <button onclick="handleAnswer('high')" id="btnPitchHigh" disabled class="game-btn py-6 rounded-2xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-lg hover:bg-blue-600 hover:text-white hover:border-blue-500 transition active:scale-95 flex flex-col items-center gap-2">
+              <i class="fa-solid fa-arrow-up text-2xl text-blue-400"></i> NADA TINGGI
+            </button>
+            <button onclick="handleAnswer('low')" id="btnPitchLow" disabled class="game-btn py-6 rounded-2xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-lg hover:bg-orange-600 hover:text-white hover:border-orange-500 transition active:scale-95 flex flex-col items-center gap-2">
+              <i class="fa-solid fa-arrow-down text-2xl text-orange-400"></i> NADA RENDAH
+            </button>
+          </div>
+        `;
+      } else if (mode === 'stereo') {
+        titleEl.innerHTML = `<i class="fa-solid fa-headphones text-emerald-400"></i> Arah Audio Stereo`;
+        descEl.innerText = "Dengarkan dari mana suara berasal: Telinga KIRI atau KANAN?";
+        instructionHint.innerText = "Gunakan earphone/headphone untuk lokalisasi audio optimal.";
+        timerContainer.classList.remove('opacity-0');
+
+        controls.innerHTML = `
+          <div class="grid grid-cols-2 gap-4">
+            <button onclick="handleAnswer('left')" id="btnStereoLeft" disabled class="game-btn py-6 rounded-2xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-lg hover:bg-emerald-600 hover:text-white hover:border-emerald-500 transition active:scale-95 flex flex-col items-center gap-2">
+              <i class="fa-solid fa-left-long text-2xl text-emerald-400"></i> TELINGA KIRI
+            </button>
+            <button onclick="handleAnswer('right')" id="btnStereoRight" disabled class="game-btn py-6 rounded-2xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-lg hover:bg-teal-600 hover:text-white hover:border-teal-500 transition active:scale-95 flex flex-col items-center gap-2">
+              <i class="fa-solid fa-right-long text-2xl text-teal-400"></i> TELINGA KANAN
+            </button>
+          </div>
+        `;
+      } else if (mode === 'rhythm') {
+        titleEl.innerHTML = `<i class="fa-solid fa-drum text-purple-400"></i> Memori Sekuens (Simon Says)`;
+        descEl.innerText = "Dengarkan pola urutan nada, lalu ulangi penekanan tombol nada yang sama.";
+        instructionHint.innerText = "Melatih memori jangka pendek auditori dan fokus kognitif.";
+        timerContainer.classList.add('opacity-0');
+
+        controls.innerHTML = `
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            ${rhythmPitches.map(p => `
+              <button id="rhythmPad-${p.id}" onclick="handleRhythmInput(${p.id})" disabled class="rhythm-pad h-24 rounded-2xl border ${p.color} text-white font-bold text-sm transition active:scale-90 flex flex-col items-center justify-center gap-1 shadow-lg opacity-60 cursor-not-allowed">
+                <i class="fa-solid fa-compact-disc text-lg"></i>
+                <span>${p.note}</span>
+              </button>
+            `).join('')}
+          </div>
+        `;
+      } else if (mode === 'stroop') {
+        titleEl.innerHTML = `<i class="fa-solid fa-bolt text-rose-400"></i> Auditory Stroop Test`;
+        descEl.innerText = "Konflik Kata vs Pitch Nada! Fokus HANYA pada aturan instruksi yang aktif.";
+        instructionHint.innerText = "Menguji kendali inhibisi (inhibition control) saat ada gangguan stimulus.";
+        timerContainer.classList.remove('opacity-0');
+        stroopBanner.classList.remove('hidden');
+
+        controls.innerHTML = `
+          <div class="grid grid-cols-2 gap-4">
+            <button onclick="handleAnswer('high')" id="btnStroopHigh" disabled class="game-btn py-6 rounded-2xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-lg hover:bg-rose-600 hover:text-white hover:border-rose-500 transition active:scale-95 flex flex-col items-center gap-2">
+              <i class="fa-solid fa-arrow-up text-2xl text-rose-400"></i> TINGGI
+            </button>
+            <button onclick="handleAnswer('low')" id="btnStroopLow" disabled class="game-btn py-6 rounded-2xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-lg hover:bg-amber-600 hover:text-white hover:border-amber-500 transition active:scale-95 flex flex-col items-center gap-2">
+              <i class="fa-solid fa-arrow-down text-2xl text-amber-400"></i> RENDAH
+            </button>
+          </div>
+        `;
+      }
+
+      resetGameStageUI();
+    }
+
+    function resetGameStageUI() {
+      document.getElementById('currentScore').innerText = "0";
+      document.getElementById('reactionTime').innerText = "0 ms";
+      document.getElementById('timer').innerText = "30s";
+      document.getElementById('statusMessage').innerHTML = `<span>Tekan <strong class="text-indigo-400">Mulai Game</strong> untuk bermain</span>`;
+      document.getElementById('statusMessage').className = "text-lg md:text-xl font-semibold text-slate-300 mb-4 h-8 transition-all flex items-center justify-center gap-2";
+    }
+
+    function startGame() {
+      getAudioContext();
+      isPlaying = true;
+      score = 0;
+      lastReactionTime = 0;
+      document.getElementById('currentScore').innerText = score;
+      document.getElementById('reactionTime').innerText = "0 ms";
+
+      document.getElementById('startBtn').innerHTML = `<i class="fa-solid fa-stop"></i> Hentikan`;
+      document.getElementById('startBtn').onclick = endGame;
+      document.getElementById('startBtn').className = "px-6 py-3 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-bold text-sm transition shadow-lg shadow-rose-600/30 flex items-center gap-2";
+
+      if (currentMode !== 'rhythm') {
+        timer = 30;
+        document.getElementById('timer').innerText = `${timer}s`;
+        
+        toggleGameButtons(false);
+        document.getElementById('replayBtn').classList.remove('hidden');
+
+        timerInterval = setInterval(() => {
+          timer--;
+          document.getElementById('timer').innerText = `${timer}s`;
+          if (timer <= 0) {
+            endGame();
+          }
+        }, 1000);
+
+        nextRound();
+      } else {
+        rhythmSequence = [];
+        playerSequence = [];
+        nextRhythmLevel();
+      }
+    }
+
+    function toggleGameButtons(disabled) {
+      const btns = document.querySelectorAll('.game-btn, .rhythm-pad');
+      btns.forEach(b => {
+        b.disabled = disabled;
+        if (disabled) {
+          b.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+          b.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+      });
+    }
+
+    function playCurrentStimulus() {
+      if (!isPlaying) return;
+      stimulusStartTime = performance.now(); // Record start time for reaction metric
+
+      if (currentMode === 'pitch') {
+        const freq = currentTarget === 'high' ? 880 : 220;
+        playTone(freq, 'sine', 0.4, 0);
+      } else if (currentMode === 'stereo') {
+        const pan = currentTarget === 'left' ? -1 : 1;
+        playTone(440, 'triangle', 0.4, pan);
+      } else if (currentMode === 'stroop') {
+        // Play BOTH Word and Pitch simultaneously to create cognitive Stroop interference
+        const freq = stroopPitch === 'high' ? 880 : 220;
+        playTone(freq, 'sine', 0.5, 0);
+        speakWord(stroopWord);
+      }
+    }
+
+    function nextRound() {
+      if (!isPlaying) return;
+
+      if (currentMode === 'pitch') {
+        currentTarget = Math.random() > 0.5 ? 'high' : 'low';
+        document.getElementById('statusMessage').innerHTML = `<span class="text-indigo-300">Dengarkan nada...</span>`;
+        setTimeout(() => {
+          if (isPlaying) {
+            playCurrentStimulus();
+            document.getElementById('statusMessage').innerText = "Tebak: TINGGI atau RENDAH?";
+          }
+        }, 300);
+      } else if (currentMode === 'stereo') {
+        currentTarget = Math.random() > 0.5 ? 'left' : 'right';
+        document.getElementById('statusMessage').innerHTML = `<span class="text-indigo-300">Dengarkan arah suara...</span>`;
+        setTimeout(() => {
+          if (isPlaying) {
+            playCurrentStimulus();
+            document.getElementById('statusMessage').innerText = "Suara muncul dari mana?";
+          }
+        }, 300);
+      } else if (currentMode === 'stroop') {
+        // Randomize Rule (Word vs Pitch)
+        stroopRule = Math.random() > 0.5 ? 'word' : 'pitch';
+        
+        // Randomize Word ('TINGGI' or 'RENDAH')
+        stroopWord = Math.random() > 0.5 ? 'TINGGI' : 'RENDAH';
+        
+        // Randomize Pitch Tone ('high' or 'low')
+        stroopPitch = Math.random() > 0.5 ? 'high' : 'low';
+
+        // Set correct target answer based on active rule
+        if (stroopRule === 'word') {
+          currentTarget = (stroopWord === 'TINGGI') ? 'high' : 'low';
+          document.getElementById('stroopTargetRuleText').innerText = "FOKUS ATURAN: KATA UCAPAN";
+          document.getElementById('stroopInstructionBanner').className = "mb-4 px-5 py-2.5 rounded-full bg-slate-900 border border-blue-500/50 text-sm font-bold text-blue-300 shadow-md flex items-center gap-2 stroop-flash";
+        } else {
+          currentTarget = (stroopPitch === 'high') ? 'high' : 'low';
+          document.getElementById('stroopTargetRuleText').innerText = "FOKUS ATURAN: PITCH NADA";
+          document.getElementById('stroopInstructionBanner').className = "mb-4 px-5 py-2.5 rounded-full bg-slate-900 border border-rose-500/50 text-sm font-bold text-rose-300 shadow-md flex items-center gap-2 stroop-flash";
+        }
+
+        document.getElementById('statusMessage').innerHTML = `<span class="text-indigo-300">Dengarkan stimulus...</span>`;
+        setTimeout(() => {
+          if (isPlaying) {
+            playCurrentStimulus();
+            document.getElementById('statusMessage').innerText = (stroopRule === 'word') ? "Pilih sesuai KATA yang diucapkan!" : "Pilih sesuai NADA yang terdengar!";
+          }
+        }, 400);
+      }
+    }
+
+    function handleAnswer(userChoice) {
+      if (!isPlaying) return;
+
+      // Calculate reaction time in milliseconds
+      const reactionMs = Math.round(performance.now() - stimulusStartTime);
+      document.getElementById('reactionTime').innerText = `${reactionMs} ms`;
+
+      if (userChoice === currentTarget) {
+        score += 10;
+        playFeedbackSound(true);
+        setStatusFeedback("Benar! +10", "text-emerald-400");
+      } else {
+        score = Math.max(0, score - 5);
+        playFeedbackSound(false);
+        setStatusFeedback("Salah! -5", "text-rose-400");
+      }
+
+      document.getElementById('currentScore').innerText = score;
+      nextRound();
+    }
+
+    /* Rhythm Mode Logic */
+    function nextRhythmLevel() {
+      playerSequence = [];
+      score++;
+      document.getElementById('currentScore').innerText = score;
+
+      const nextToneId = Math.floor(Math.random() * 4);
+      rhythmSequence.push(nextToneId);
+
+      playRhythmSequence();
+    }
+
+    function playRhythmSequence() {
+      isPatternPlaying = true;
+      toggleGameButtons(true);
+      document.getElementById('statusMessage').innerHTML = `<span class="text-purple-400 font-bold"><i class="fa-solid fa-ear-listen animate-pulse"></i> Amati Pola Sekuens...</span>`;
+
+      let i = 0;
+      const interval = setInterval(() => {
+        if (!isPlaying) {
+          clearInterval(interval);
+          return;
+        }
+
+        const padId = rhythmSequence[i];
+        highlightPad(padId);
+        playTone(rhythmPitches[padId].freq, 'sine', 0.4, 0);
+
+        i++;
+        if (i >= rhythmSequence.length) {
+          clearInterval(interval);
+          setTimeout(() => {
+            isPatternPlaying = false;
+            toggleGameButtons(false);
+            stimulusStartTime = performance.now();
+            document.getElementById('statusMessage').innerText = "Giliran Anda! Ulangi urutan nada.";
+          }, 600);
+        }
+      }, 700);
+    }
+
+    function highlightPad(id) {
+      const pad = document.getElementById(`rhythmPad-${id}`);
+      if (pad) {
+        pad.classList.add('ring-4', 'ring-white', 'scale-105', 'opacity-100');
+        setTimeout(() => {
+          pad.classList.remove('ring-4', 'ring-white', 'scale-105', 'opacity-100');
+        }, 400);
+      }
+    }
+
+    function handleRhythmInput(padId) {
+      if (!isPlaying || isPatternPlaying) return;
+
+      const reactionMs = Math.round(performance.now() - stimulusStartTime);
+      document.getElementById('reactionTime').innerText = `${reactionMs} ms`;
+
+      playTone(rhythmPitches[padId].freq, 'sine', 0.3, 0);
+      highlightPad(padId);
+
+      playerSequence.push(padId);
+      const currentIndex = playerSequence.length - 1;
+
+      if (playerSequence[currentIndex] !== rhythmSequence[currentIndex]) {
+        playFeedbackSound(false);
+        setStatusFeedback("Sekuens Salah! Game Over", "text-rose-400");
+        setTimeout(() => endGame(), 1000);
+        return;
+      }
+
+      if (playerSequence.length === rhythmSequence.length) {
+        playFeedbackSound(true);
+        setStatusFeedback("Sempurna! Sekuens Selesai", "text-emerald-400");
+        toggleGameButtons(true);
+        setTimeout(() => {
+          nextRhythmLevel();
+        }, 1200);
+      }
+    }
+
+    function setStatusFeedback(msg, textColorClass) {
+      const el = document.getElementById('statusMessage');
+      el.innerText = msg;
+      el.className = `text-lg md:text-xl font-bold mb-4 h-8 transition-all flex items-center justify-center gap-2 ${textColorClass}`;
+    }
+
+    function endGame() {
+      isPlaying = false;
+      clearInterval(timerInterval);
+      if (synth) synth.cancel();
+      toggleGameButtons(true);
+
+      document.getElementById('replayBtn').classList.add('hidden');
+
+      // Check & Update High Scores
+      let newRecord = false;
+      if (score > highScores[currentMode]) {
+        highScores[currentMode] = score;
+        localStorage.setItem(`ab_hs_${currentMode}`, score.toString());
+        newRecord = true;
+        updateHighScoreDisplay();
+      }
+
+      const statusEl = document.getElementById('statusMessage');
+      if (newRecord) {
+        statusEl.innerHTML = `<span class="text-amber-400 font-extrabold"><i class="fa-solid fa-trophy"></i> Rekor Baru! Skor Akhir: ${score}</span>`;
+        showToast(`Selamat! Rekor baru tercapai: ${score}`, 'success');
+      } else {
+        statusEl.innerHTML = `<span class="text-slate-200">Permainan Selesai. Skor Akhir: <strong class="text-indigo-400">${score}</strong></span>`;
+      }
+
+      const startBtn = document.getElementById('startBtn');
+      startBtn.innerHTML = `<i class="fa-solid fa-play"></i> Main Lagi`;
+      startBtn.onclick = startGame;
+      startBtn.className = "px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-sm transition shadow-lg shadow-indigo-600/30 flex items-center gap-2";
+    }
+
+    function showToast(text, type = 'info') {
+      const toast = document.getElementById('toast');
+      const toastText = document.getElementById('toastText');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastText.innerText = text;
+      if (type === 'success') {
+        toastIcon.className = 'fa-solid fa-circle-check text-emerald-400';
+      } else {
+        toastIcon.className = 'fa-solid fa-circle-info text-blue-400';
+      }
+
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+
+    // Initialize Application
+    window.onload = function() {
+      updateHighScoreDisplay();
+      switchMode('stroop'); // Default to the newly added Stroop mode
+    };
+  </script>
+</body>
+</html>
